@@ -57,3 +57,17 @@ Cassandra, DynamoDB, Riak.
 Clients always get a response, but some reads may be stale.
 Conflicts are resolved later (e.g., “last write wins” or vector clocks).
 This is common in social media, shopping carts, or apps where user experience matters more than strict accuracy.
+
+
+
+# **Tabular Comparision**
+
+| Aspect | **Banking / Trading Systems (CP)** | **Social Media / Large‑Scale Apps (AP)** |
+| --- | --- | --- |
+| **Priority** | Correctness of data (Consistency) | Responsiveness and uptime (Availability) |
+| **Partition Handling** | If nodes can’t communicate, block or roll back transactions until all replicas agree | Continue serving requests from available nodes, even if some replicas are unreachable |
+| **User Experience** | Possible errors, timeouts, or retries during failures | Always responsive, but users may see stale or eventually updated data |
+| **Replication** | Synchronous replication → ensures all nodes have the same committed state | Asynchronous replication → updates propagate later, background reconciliation |
+| **Risk Tolerance** | Zero tolerance for anomalies (a $1M trade must be correct) | Tolerates temporary inconsistency (a “like” count can be off for a few minutes) |
+| **Isolation Level** | Often SERIALIZABLE → strict correctness, but higher contention | Often READ COMMITTED or eventual consistency → faster, but less strict |
+| **Example Systems** | Oracle RAC, PostgreSQL synchronous clusters | Cassandra, DynamoDB, MongoDB sharded clusters |
