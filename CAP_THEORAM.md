@@ -12,3 +12,48 @@ Keep serving requests from the reachable nodes, even if they can’t talk to the
 
 **CA (Consistency + Availability)**:  
 Only possible if you assume no partitions will ever happen — which is unrealistic in distributed systems. That’s why CAP says: during a partition, you can’t have all three.
+
+
+So most of the systems would end up choosing one over the other in case of communications failures between databases.
+
+
+**Consistency-first (CP systems)**
+**Behavior**:
+
+* If one node is unreachable, the cluster refuses to accept writes that can’t be replicated.
+
+* Reads may be blocked until the system can guarantee the latest value.
+
+* The database prioritizes correctness over uptime.
+
+**Examples**:
+
+Oracle RAC, PostgreSQL with synchronous replication, traditional RDBMS clusters.
+
+**Result**:
+Clients may see errors or timeouts, but no stale or conflicting data.
+This is the choice for financial/trading systems — correctness is worth temporary unavailability.
+
+
+
+
+
+
+**Availability-first (AP systems)**
+**Behavior**:
+
+* If one node is unreachable, the cluster continues serving requests from the available nodes.
+
+* Writes are accepted locally and later reconciled (eventual consistency).
+
+* The database prioritizes responsiveness over strict correctness.
+
+**Examples**:
+
+Cassandra, DynamoDB, Riak.
+
+**Result**:
+
+Clients always get a response, but some reads may be stale.
+Conflicts are resolved later (e.g., “last write wins” or vector clocks).
+This is common in social media, shopping carts, or apps where user experience matters more than strict accuracy.
