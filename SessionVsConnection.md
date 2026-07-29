@@ -37,6 +37,15 @@
 
 * On the Oracle side, there’s a session pool (especially with Oracle RAC or shared servers). Each connection is tied to one session.
 
-When you return a connection to the Java pool, the Oracle session is idle but still alive. It’s reused when another thread borrows that connection.
+* When you return a connection to the Java pool, the Oracle session is idle but still alive. It’s reused when another thread borrows that connection.
 
-If you actually close the connection (not just return it to the pool), then Oracle tears down the session and frees its resources.
+* If you actually close the connection (not just return it to the pool), then Oracle tears down the session and frees its resources.
+
+# Relationship
+* On the Java side: you have a connection object in the pool → **this is a live TCP socket**.
+
+* On the Oracle side: that socket is bound to a session object → **the logical context** that persists while the connection is alive.
+
+* When you commit a transaction, the transaction state is reset, but the session itself remains until the connection is closed.
+
+* If the Java pool returns the connection to idle, the Oracle session is idle too, but still consuming some resources (PGA memory, session state).
