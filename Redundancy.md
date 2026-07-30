@@ -46,3 +46,5 @@ Example: Cassandra lets you configure QUORUM, ONE, or ALL for reads/writes depen
 **Active‑Passive**: Quorum = commit correctness (transaction is committed only if majority agrees).
 
 **Active‑Active**: Quorum = durability (data won’t be lost), but conflict resolution is still required because multiple leaders can diverge.
+
+The cluster manager checks quorum in active‑active systems, but quorum only guarantees durability. It doesn’t prevent conflicts. That’s why active‑active always pairs quorum with conflict resolution protocols.
