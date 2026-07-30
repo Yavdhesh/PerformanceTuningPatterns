@@ -19,6 +19,8 @@
 
 **Geo‑redundancy**: Copies across regions for disaster recovery.
 
+
+
 # Replication
 **Replication**: Synchronous (strong consistency) vs. asynchronous (eventual consistency).
 
@@ -40,3 +42,7 @@ This ensures consistency even if one node is down.
 Trade‑off: Higher quorum = stronger consistency but lower availability. Lower quorum = higher availability but risk of stale data.
 
 Example: Cassandra lets you configure QUORUM, ONE, or ALL for reads/writes depending on your consistency vs. availability needs.
+
+**Active‑Passive**: Quorum = commit correctness (transaction is committed only if majority agrees).
+
+**Active‑Active**: Quorum = durability (data won’t be lost), but conflict resolution is still required because multiple leaders can diverge.
