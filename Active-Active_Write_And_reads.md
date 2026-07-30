@@ -15,7 +15,59 @@
 
 * **Commit**: Once quorum is met, client gets success; remaining replicas sync asynchronously.
 
+_________________________________________________________________________________________________________________________________________________________________________
+# **Range‑based Sharding**
+* Coordinator finds the primary node that owns the numeric range containing the key (e.g., customerId=1456).
 
+* The primary node applies the write locally.
+
+* The primary initiates replication to other nodes until enough ACKs are collected to meet the write quorum.
+
+* The coordinator (or primary acting as leader) confirms durability once quorum ACKs are received.
+
+✅ **Correct**: replication requests originate from the primary node.
+
+# **Hash Ring / Token Ring Sharding**
+
+Coordinator computes the hash of the key and finds the primary node responsible for that segment/token.
+Secondary nodes (replicas) are identified by walking clockwise around the ring.
+
+**Two possible implementations**:
+
+**Primary‑driven replication**: Coordinator sends the write only to the primary, and the primary replicates to secondaries.
+
+**Coordinator‑driven replication**: Coordinator sends the write to the primary and the identified secondary nodes directly, then waits for ACKs.
+
+In both cases, the coordinator only returns success once write quorum ACKs are satisfied.
+
+✅ **Correct**: secondaries are chosen clockwise, and either the primary or the coordinator handles replication fan‑out depending on system design.
+
+**Key Difference**
+Range‑based: Always primary‑driven replication.
+
+**Hash/token ring**: Can be either primary‑driven or coordinator‑driven, depending on the database system.
+**Examples**:
+* * Cassandra/DynamoDB: Coordinator sends to primary + replicas directly.
+
+* * MySQL Group Replication: Primary applies and replicates outward.
+
+**Takeaway**:  
+Yes — in range setups, the coordinator requests the primary only, and the primary replicates to others. In hash/token rings, the coordinator identifies the primary and secondaries clockwise; replication can be primary‑driven or coordinator‑driven depending on the system. Either way, the coordinator waits until write quorum ACKs are achieved before declaring the transaction durable and complete.
+
+# Broadcast‑based Replication Flow
+* Coordinator receives the client request (e.g., UPDATE customers SET status='active' WHERE customerId=1456).
+
+* Coordinator fans out the write to all nodes in the cluster simultaneously — no single “primary” is chosen.
+
+* Each node applies the update locally and generates an ACK.
+
+* Coordinator collects ACKs until the write quorum is satisfied (e.g., 3 of 5 nodes).
+
+* Client gets success once quorum is met. Remaining nodes may finish applying asynchronously.
+
+* Conflict resolution (vector clocks, CRDTs, or LWW) ensures correctness if multiple writes collide.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Types of Sharding on Hash Rings
 1. **Range‑based sharding (simple ranges)**
 * Keys are divided into contiguous ranges (e.g., IDs 1–1000 → Node A, 1001–2000 → Node B).
