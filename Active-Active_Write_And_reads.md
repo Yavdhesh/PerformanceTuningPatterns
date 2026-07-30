@@ -71,3 +71,25 @@
 * **Token‑based ring**: Nodes own tokens; keys map directly to tokens; replicas chosen clockwise.
 
 * **Broadcast**: All nodes receive writes; quorum ACKs determine commit.
+
+
+# Scalability vs Complexity
+**Broadcast model**:
+
+* ✅ Scales horizontally (any node can take writes).
+
+* ✅ High availability (no single point of ownership).
+
+* ❌ More replication traffic.
+
+* ❌ Needs sophisticated conflict resolution (vector clocks, CRDTs).
+
+**Range/Hash ring models**:
+
+* ✅ Less replication traffic (only quorum subset involved).
+
+* ✅ Simpler conflict handling (primary‑based ordering).
+
+* ❌ Scaling requires rebalancing (ranges or tokens).
+
+* ❌ Node ownership must be managed carefully.
