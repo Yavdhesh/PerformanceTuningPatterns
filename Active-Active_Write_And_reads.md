@@ -15,6 +15,47 @@
 
 * **Commit**: Once quorum is met, client gets success; remaining replicas sync asynchronously.
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Replication Factor (RF) and Write Quorum (W)
+
+# Range‑based Sharding
+
+**Replication Factor (RF)**:
+* Fixed per range.
+* Each primary node has designated replicas (e.g., Node A owns IDs 1–1000, with Node B and Node F as replicas if RF=3).
+
+**Write Quorum (W)**:
+* Coordinator waits for ACKs from W nodes (primary + replicas).
+    Example: RF=3, W=2 → primary + 1 replica ACK is enough.
+
+# Hash/Token Ring Sharding
+**Replication Factor (RF)**:
+* Determined by walking clockwise around the ring from the primary.
+* Example: RF=3 in a 5‑node ring → primary + 2 clockwise replicas.
+
+**Write Quorum (W)**:
+* Only W ACKs are required, not all replicas.
+    Example: RF=5, W=3 → all 5 nodes store the data, but only 3 ACKs are needed for durability.
+
+# Broadcast Model
+**Replication Factor (RF)**:
+* Equal to the number of nodes in the cluster (every node stores the data).
+
+**Write Quorum (W)**:
+* Coordinator waits for ACKs from W nodes out of the total.
+    Example: 10‑node cluster, RF=10, W=6 → all nodes replicate, but only 6 ACKs are needed.
+
+# Key Takeaway
+* **RF** = how many nodes store the data.
+
+* **W** = how many ACKs are needed for durability.
+
+* **Range‑based**: RF = fixed replicas per primary.
+
+* **Hash/token ring**: RF = primary + clockwise replicas.
+
+* **Broadcast**: RF = all nodes.
+
 _________________________________________________________________________________________________________________________________________________________________________
 # **Range‑based Sharding**
 * Coordinator finds the primary node that owns the numeric range containing the key (e.g., customerId=1456).
@@ -145,3 +186,58 @@ Yes — in range setups, the coordinator requests the primary only, and the prim
 * ❌ Scaling requires rebalancing (ranges or tokens).
 
 * ❌ Node ownership must be managed carefully.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Data Ownership in difference Shardding models discussed above-
+
+# Range‑based Sharding
+**Ownership**: Each node owns a fixed numeric range (e.g., IDs 1–1000 → Node A).
+
+**Replication**:
+
+* Primary node applies the write.
+
+* Replicates to designated secondary nodes (set in cluster metadata/configuration).
+
+* **Quorum**: Coordinator waits until ACKs from primary + replicas meet the write quorum.
+
+**Scaling**: Adding nodes requires splitting ranges → large migrations.
+
+#  Hash/Token Ring Sharding
+**Ownership**: Each key is hashed; the hash maps to a primary node on the ring.
+
+**Replication**:
+
+* Secondary replicas are chosen clockwise around the ring.
+
+* Either the primary replicates outward or the coordinator sends directly to primary + replicas (depends on system).
+
+* **Quorum**: Coordinator waits until ACKs from primary + replicas meet the write quorum.
+
+* **Scaling**: Adding/removing nodes redistributes only a fraction of keys.
+
+# Broadcast Model
+**Ownership**: No ranges or tokens — all nodes are peers.
+
+**Replication**:
+
+* Coordinator sends the write to all nodes simultaneously.
+
+* Each node applies locally and ACKs back.
+
+* **Quorum**: Coordinator waits until enough ACKs meet the write quorum.
+
+* Conflict resolution: Vector clocks, CRDTs, or LWW handle concurrent updates.
+
+* **Scaling**: Easy to add nodes (no rebalancing), but heavier replication traffic.
+
+⚡ Key Takeaway
+**Range‑based**: Primary + designated replicas hold the data.
+
+**Hash/token ring**: Primary + clockwise replicas hold the data.
+
+**Broadcast**: All nodes hold the data.
+
+In all cases, the coordinator waits until write quorum ACKs are achieved before confirming durability.
+
+----------------------------------------------------------------------------------------------------------------------------
