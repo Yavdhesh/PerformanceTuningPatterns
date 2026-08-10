@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.random.RandomGenerator;
 
 public class GarbageCollectionDemo {
+    // VM parameters- -XX:InitialHeapSize=5m -XX:MaxHeapSize=5m -XX:+PrintCodeCache -verbose:gc
 
 // This class when running should be viewed in VisualVM to see frequent Full GC running and young GC running.
 
